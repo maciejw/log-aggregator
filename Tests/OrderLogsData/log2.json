@@ -1,0 +1,6 @@
+{ "@t": "2020-01-01 12:00:00.000", "@mt": "Message 1 {data}", "@l": "Trace", "data": "some data" }
+{ "@t": "2020-01-01 12:00:00.001", "@mt": "Message 2 {@data}", "@l": "Debug", "data": [1, 2, 3] }
+{ "@t": "2020-01-01 12:00:00.002", "@mt": "Message 3 {@data}", "@l": "Information", "data": {"name": "value"} }
+{ "@t": "2020-01-01 12:00:00.003", "@mt": "Message 4", "@l": "Warning" }
+{ "@t": "2020-01-01 12:00:00.004", "@mt": "Message 5", "@l": "Error" }
+{ "@t": "2020-01-01 12:00:00.005", "@mt": "Message 6", "@l": "Critical" }

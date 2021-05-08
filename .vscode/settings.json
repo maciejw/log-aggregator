@@ -1,0 +1,15 @@
+{
+  "powershell.scriptAnalysis.enable": true,
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "powershell.codeFormatting.preset": "OTBS",
+  "files.trimTrailingWhitespace": true,
+  "editor.renderWhitespace": "all",
+  "editor.renderControlCharacters": true,
+  "files.encoding": "utf8bom",
+  "files.autoGuessEncoding": true,
+  "[powershell]": {
+    "files.encoding": "utf8bom",
+    "files.autoGuessEncoding": true
+  }
+}
