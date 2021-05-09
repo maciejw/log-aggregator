@@ -35,8 +35,8 @@ Describe "Log Aggregator" {
     }
     It "Should order files" {
       $files = @(
-        '.\OrderLogsData\log1.json',
-        '.\OrderLogsData\log2.json'
+        "$PSScriptRoot\OrderLogsData\log1.json",
+        "$PSScriptRoot\OrderLogsData\log2.json"
       )
 
       $results = ShowLogs $files
@@ -49,8 +49,8 @@ Describe "Log Aggregator" {
     }
     It "Should order and filter files" {
       $files = @(
-        '.\OrderLogsData\log1.json',
-        '.\OrderLogsData\log2.json'
+        "$PSScriptRoot\OrderLogsData\log1.json",
+        "$PSScriptRoot\OrderLogsData\log2.json"
       )
 
       $results = ShowLogs $files -filter { $log."@mt" -match "Message 2" }
@@ -62,7 +62,7 @@ Describe "Log Aggregator" {
   }
 
   Context "Colors" {
-    It "Should calculate Ansi colors for intensity <intensity> and color <color>" -ForEach @(
+    It "Should calculate Ansi colors for intensity <intensity> and color <color>" -Foreach @(
       @{Intensity = 0; ColorValue = 16; Color = "red" },
       @{Intensity = 1; ColorValue = 52; Color = "red" },
       @{Intensity = 2; ColorValue = 88; Color = "red" },
@@ -76,7 +76,7 @@ Describe "Log Aggregator" {
       } -Parameters @{Intensity = $Intensity; Color = $Color } | Should -Be $ColorValue
 
     }
-    It "Should calculate Ansi colors for intensity <HighIntensity> and color <Color>" -ForEach @(
+    It "Should calculate Ansi colors for intensity <HighIntensity> and color <Color>" -Foreach @(
       @{HighIntensity = $false; ColorValue = 0; Color = "black" },
       @{HighIntensity = $false; ColorValue = 1; Color = "red" },
       @{HighIntensity = $false; ColorValue = 2; Color = "green" },
@@ -112,9 +112,16 @@ Describe "Log Aggregator" {
   Context "Formatting" {
     It "should format log" {
       $files = @(
-        '.\OrderLogsData\log1.json'
+        "$PSScriptRoot\OrderLogsData\log1.json"
       )
       ShowLogs $files | Format-MessageTemplate | Write-Verbose
+    }
+
+    It "should format log including properties" {
+      $files = @(
+        "$PSScriptRoot\OrderLogsData\log1.json"
+      )
+      ShowLogs $files | Format-MessageTemplate -includeProperties "data", "ip" | Write-Verbose
     }
   }
 

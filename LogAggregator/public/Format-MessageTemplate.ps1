@@ -1,4 +1,32 @@
-﻿
+﻿function FormatValue {
+  param (
+    $value,
+    $color
+  )
+  $value | Format-AnsiColor -fg $color -fgi 3
+}
+
+Class AnsiFormatProvider : System.IFormatProvider, System.ICustomFormatter {
+
+  [object] GetFormat([Type] $formatType) {
+    if ($formatType -eq [ICustomFormatter]) {
+      return $this;
+    } else {
+      return $null;
+    }
+  }
+
+  [string] Format([string] $fmt, [object] $arg, [IFormatProvider] $formatProvider) {
+    if ($arg.GetType() -eq [System.Boolean]) {
+      return FormatValue $arg "green"
+    } else {
+      return FormatValue $arg "magenta"
+    }
+  }
+}
+
+
+
 function CreatePropertyValue ([object]$value) {
   if ($null -eq $value) {
     return  [MessageTemplates.Structure.ScalarValue]::new($null);
@@ -17,9 +45,18 @@ function CreatePropertyValue ([object]$value) {
     }
     return [MessageTemplates.Structure.StructureValue]::new([MessageTemplates.Structure.TemplateProperty[]]$properties)
   }
+  $formatedValue = switch ($value.GetType()) {
+    {
+      $PSItem -eq [System.String]
+    } {
+      FormatValue $value 'cyan'
+    }
+    Default {
+      $value
+    }
+  }
 
-  return [MessageTemplates.Structure.ScalarValue]::new($value);
-
+  return [MessageTemplates.Structure.ScalarValue]::new($formatedValue);
 }
 
 function CreateProperty([string] $name, [object]$value) {
@@ -27,19 +64,14 @@ function CreateProperty([string] $name, [object]$value) {
   return  [MessageTemplates.Structure.TemplateProperty]::new($name, $propertyValue)
 }
 
-function GetColorForLevel {
-  [CmdletBinding()]
-  param (
-    [Parameter()]
-    $Level
-  )
-  switch ($Level) {
+function GetColorFromLogLevel ($LogLevel) {
+  switch ($LogLevel) {
     "Trace" { @{fg = "cyan"; fgi = 1 } }
     "Debug" { @{fg = "magenta" ; fgi = 2 } }
-    "Information" { @{ fg = "green"; fgi = 3 } }
-    "Warning" { @{ fg = "yellow"; fgi = 4 } }
+    "Information" { @{ fg = "white"; fgi = 3 } }
+    "Warning" { @{ fg = "yellow"; fgi = 5 } }
     "Error" { @{ fg = "red"; fgi = 5 } }
-    "Critical" { @{ fg = "white"; fgi = 5 } }
+    "Critical" { @{ fg = "white"; fgi = 4; bg = "red"; bgi = 5 } }
     Default { @{ fg = "white"; fgi = 3 } }
   }
 }
@@ -48,11 +80,11 @@ function Format-MessageTemplate {
   param (
     [Parameter(Mandatory, ValueFromPipeline)]
     [pscustomobject]
-    $item
+    $item,
+    [string[]]
+    $includeProperties
   )
-  begin {
-    # $excludedProperties = @("@mt", "@t", "@l", "PSComputerName", "RunspaceId", "PSShowComputerName")
-  }
+  begin {  }
   process {
     $level = $item."@l"
     $timestamp = $item."@t"
@@ -67,10 +99,10 @@ function Format-MessageTemplate {
     if ($properties) {
       $propertyList = [MessageTemplates.Core.TemplatePropertyList]::new($properties)
       $templateProperties = [MessageTemplates.Core.TemplatePropertyValueDictionary]::new($propertyList);
-      $message = $messageTemplate.Render($templateProperties)
+      $message = $messageTemplate.Render($templateProperties, [AnsiFormatProvider]::new())
     }
 
-    $color = GetColorForLevel -Level $level
+    $color = GetColorFromLogLevel $level
 
     $logEntry = @(
       ("$timestamp" | Format-AnsiColor -fg "white" -fgi $color.fgi),
@@ -79,8 +111,12 @@ function Format-MessageTemplate {
     )
 
     $logEntry -join " "
-    # if (($data.PSObject.Properties | Measure-Object).Count -gt 0) {
-    #   $data | ConvertTo-Json -Compress | Format-AnsiColor | Out-Default
-    # }
+    if ($includeProperties) {
+      $includedData = $item | Select-Object -Property $includeProperties
+      $existingProperties = $includedData.PSObject.Properties | Where-Object { $null -NE $PSItem.Value } | ForEach-Object Name
+      if ($existingProperties) {
+        $includedData | Select-Object $existingProperties | Out-String | Format-AnsiColor
+      }
+    }
   }
 }
