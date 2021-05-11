@@ -5,7 +5,8 @@ function ShowLogs {
     [string[]]
     $logFiles,
     [scriptblock]
-    $filter
+    $filter,
+    $timestampPropertyName = "@t"
   )
 
 
@@ -23,5 +24,5 @@ function ShowLogs {
     }
   } | Wait-Job | ForEach-Object {
     $_ | Receive-Job
-  } | Sort-Object "@t"
+  } | Sort-Object "$timestampPropertyName"
 }

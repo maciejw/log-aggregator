@@ -1,4 +1,5 @@
-﻿function FormatValue {
+﻿
+function FormatValue {
   param (
     $value,
     $color
@@ -82,14 +83,17 @@ function Format-MessageTemplate {
     [pscustomobject]
     $item,
     [string[]]
-    $includeProperties
+    $includeProperties,
+    $timestampPropertyName = "@t",
+    $messageTemplatePropertyName = "@mt",
+    $levelPropertyName = "@l"
   )
   begin {  }
   process {
-    $level = $item."@l"
-    $timestamp = $item."@t"
+    $level = $item."$levelPropertyName"
+    $timestamp = $item."$timestampPropertyName"
 
-    $messageTemplate = [MessageTemplates.MessageTemplate]::Parse($item."@mt")
+    $messageTemplate = [MessageTemplates.MessageTemplate]::Parse($item."$messageTemplatePropertyName")
 
     $data = $item | Select-Object -Property $messageTemplate.Tokens.PropertyName
     $properties = $data.PSObject.Properties | ForEach-Object {

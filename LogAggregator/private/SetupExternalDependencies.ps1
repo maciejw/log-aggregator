@@ -1,6 +1,14 @@
 ﻿$PackageDependecies = "$PSScriptRoot\PackageDependecies"
 $PackageDependeciesPublished = "$PSScriptRoot\PackageDependeciesPublished"
 
+function dotnet {
+  dotnet.exe @args | Out-String | Write-Verbose
+  if ($LASTEXITCODE -ne 0) {
+    throw "dotnet exited with $LASTEXITCODE"
+  }
+
+}
+
 function SetupExternalDependencies {
   [CmdletBinding()]
   param(
